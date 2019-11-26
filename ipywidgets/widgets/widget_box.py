@@ -190,3 +190,14 @@ class Carousel(Box):
             The child to add.
         """
         self.children += (child,)
+
+    def iter_capture(self, items, **kw):
+        """Capture each iterable item in a new child.
+
+        Parameters
+        ----------
+        **kw: additional keyword arguments to pass to self.capture.
+        """
+        for _ in items:
+            with self.capture(**kw):
+                yield _
