@@ -163,7 +163,9 @@ class Carousel(Box):
         overflow_x='auto',
         max_width='100%',
     )
-    output_layout = Layout()
+    output_layout = Layout(
+        min_width='20em',
+    )
 
     @contextmanager
     def capture(self, **kw):
