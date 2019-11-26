@@ -13,6 +13,7 @@ from .widget import register, widget_serialization, Widget
 from .domwidget import DOMWidget
 from .widget_core import CoreWidget
 from .widget_output import Output
+from .widget_layout import Layout
 from .docutils import doc_subst
 from .trait_types import TypedTuple
 from traitlets import Unicode, CaselessStrEnum, Instance
@@ -157,12 +158,12 @@ class Carousel(Box):
     >>>
     >>> carousel
     """
-    layout = w.Layout(
+    layout = Layout(
         flex_flow='row nowrap',
         overflow_x='auto',
         max_width='100%',
     )
-    output_layout = w.Layout()
+    output_layout = Layout()
 
     @contextmanager
     def capture(self, **kw):
