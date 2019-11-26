@@ -8,9 +8,11 @@ group other widgets together and control their
 relative layouts.
 """
 
+from contextlib import contextmanager
 from .widget import register, widget_serialization, Widget
 from .domwidget import DOMWidget
 from .widget_core import CoreWidget
+from .widget_output import Output
 from .docutils import doc_subst
 from .trait_types import TypedTuple
 from traitlets import Unicode, CaselessStrEnum, Instance
@@ -130,3 +132,58 @@ class GridBox(Box):
     """
     _model_name = Unicode('GridBoxModel').tag(sync=True)
     _view_name = Unicode('GridBoxView').tag(sync=True)
+
+@register
+class Carousel(Box):
+    """ Displays multiple widgets in columns in a Carousel layout.
+
+    Parameters
+    ----------
+    {box_params}
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import ipywidgets as widgets
+    >>>
+    >>> carousel = widgets.Carousel()
+    >>>
+    >>> x = np.arange(20)
+    >>> for mean in np.linspace(1, 20, 5):
+    >>>     with carousel.capture():
+    >>>         plt.plot(x, np.random.randn(len(x)) + mean)
+    >>>         plt.show()
+    >>>
+    >>> carousel
+    """
+    layout = w.Layout(
+        flex_flow='row nowrap',
+        overflow_x='auto',
+        max_width='100%',
+    )
+    output_layout = w.Layout()
+
+    @contextmanager
+    def capture(self, **kw):
+        """Captures output inside a with statement and adds it as a new child.
+
+        Parameters
+        ----------
+        **kw: additional keyword arguments to pass to Output.
+        """
+        kw.setdefault('layout', self.output_layout)
+        out = Output(**kw)
+        self.append_item(out)
+        with out:
+            yield out
+
+    def append_item(self, child):
+        """Appends a new child.
+
+        Parameters
+        ----------
+        child : Widget
+            The child to add.
+        """
+        self.children += (child,)

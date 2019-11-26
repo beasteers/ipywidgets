@@ -7,7 +7,9 @@ Represents a multipage container that can be used to group other widgets into
 pages.
 """
 
+from contextlib import contextmanager
 from .widget_box import Box
+from .widget_output import Output
 from .widget import register
 from .widget_core import CoreWidget
 from traitlets import Unicode, Dict, CInt, TraitError, validate
@@ -59,6 +61,58 @@ class _SelectionContainer(Box, CoreWidget):
             return self._titles[index]
         else:
             return None
+
+    @contextmanager
+    def capture(self, title=None, selected=None, **kw):
+        """Captures output inside a with statement and adds it as a new child.
+
+        Parameters
+        ----------
+        title : str
+            Title of the child.
+        selected: bool
+            If true, set this child as selected.
+        **kw: additional keyword arguments to pass to Output.
+        """
+        out = Output(**kw)
+        self.append_item(out, title, selected=selected)
+        with out:
+            yield out
+
+    def append_item(self, child, title=None, selected=None):
+        """Appends a new child.
+
+        Parameters
+        ----------
+        child : Widget
+            The child to add.
+        title : str
+            Title of the child.
+        selected: bool
+            If true, set this child as selected.
+        """
+        self.children += (child,)
+        if title:
+            self.set_title(len(self.children) - 1, title)
+        if selected:
+            self.selected_index = len(self.children) - 1
+
+    def iter_capture(self, items, as_title=False, **kw):
+        """Capture each iterable item in a new child.
+
+        Parameters
+        ----------
+        as_title : bool, callable, None
+            If true, set the iterable item as the title.
+            If callable, call as_title with the item as an argument,
+            returning the title.
+            If None (default), add no title.
+        **kw: additional keyword arguments to pass to self.capture.
+        """
+        for _ in items:
+            title = as_title and (as_title(_) if callable(as_title) else _)
+            with self.capture(title=title, **kw):
+                yield _
 
     def _repr_keys(self):
         # We also need to include _titles in repr for reproducibility
