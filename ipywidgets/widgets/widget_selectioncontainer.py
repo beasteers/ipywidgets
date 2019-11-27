@@ -109,10 +109,20 @@ class _SelectionContainer(Box, CoreWidget):
             If None (default), add no title.
         **kw: additional keyword arguments to pass to self.capture.
         """
-        for _ in items:
-            title = as_title and (as_title(_) if callable(as_title) else _)
-            with self.capture(title=title, **kw):
-                yield _
+        items = (x for x in items)
+        while True:
+            with self.capture(**kw) as o:
+                try:
+                    i = next(items)
+                    # any output from as_title is inside the output widget
+                    title = as_title and (as_title(i) if callable(as_title) else i)
+                    if title:
+                        self.set_title(len(self.children) - 1, title)
+                    yield i
+                except StopIteration:
+                    break
+                except KeyboardInterrupt:
+                    break
 
     def _repr_keys(self):
         # We also need to include _titles in repr for reproducibility

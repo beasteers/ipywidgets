@@ -191,13 +191,20 @@ class Carousel(Box):
         """
         self.children += (child,)
 
-    def iter_capture(self, items, **kw):
+
+    def iter_capture(self, items, as_title=False, **kw):
         """Capture each iterable item in a new child.
 
         Parameters
         ----------
         **kw: additional keyword arguments to pass to self.capture.
         """
-        for _ in items:
+        items = (x for x in items)
+        while True:
             with self.capture(**kw):
-                yield _
+                try:
+                    yield next(items)
+                except StopIteration:
+                    break
+                except KeyboardInterrupt:
+                    break
